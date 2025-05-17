@@ -1,0 +1,53 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+import pickle
+
+df=pd.read_csv("/content/laptop.csv")
+
+# Step 1: Select Features and Target
+X = df[['Company', 'TypeName', 'Cpu', 'Gpu', 'OpSys', 'ScreenResolution', 'Memory', 'Ram']]
+y = df['Price']
+
+# Step 2: Apply LabelEncoder manually to categorical columns
+label_encoders = {}
+for col in X.columns:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+    label_encoders[col] = le
+
+# Step 3: Optional - Use a scaler for numerical stability
+preprocessor = ColumnTransformer([
+    ('scale', StandardScaler(), X.columns)  # scales all features
+])
+
+# Step 4: Create model pipeline
+model_pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('regressor', GradientBoostingRegressor())
+])
+
+# Step 5: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 6: Fit the pipeline
+model_pipeline.fit(X_train, y_train)
+
+# Step 7: Save both model and label encoders
+with open('model_pipeline.pkl', 'wb') as f:
+    pickle.dump({
+        'model': model_pipeline,
+        'encoders': label_encoders
+    }, f)
+
+
+import pickle
+
+with open('model_pipeline.pkl', 'rb') as f:
+    saved = pickle.load(f)
+
+model_pipeline = saved['model']
+label_encoders = saved['encoders']
