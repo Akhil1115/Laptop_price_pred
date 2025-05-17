@@ -1,10 +1,13 @@
 import streamlit as st
 import pandas as pd
+# Load the trained model pipeline (includes OneHotEncoder + GradientBoostingRegressor)
 import pickle
 
-# Load the trained model pipeline (includes OneHotEncoder + GradientBoosterregressor)
 with open('model_pipeline.pkl', 'rb') as f:
-    model_pipeline = pickle.load(f)
+    saved = pickle.load(f)
+    model_pipeline = saved['model']
+    label_encoders = saved['encoders']  # Only needed if you manually apply encoders
+
 
 
 
