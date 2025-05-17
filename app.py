@@ -2,11 +2,9 @@ import streamlit as st
 import pandas as pd
 import pickle
 
-# Load the trained pipeline and label encoders
+# Load the trained model pipeline (includes OneHotEncoder + GradientBoosterregressor)
 with open('model_pipeline.pkl', 'rb') as f:
-    saved = pickle.load(f)
-    model_pipeline = saved['model']
-    label_encoders = saved['encoders']
+    model_pipeline = pickle.load(f)
 
 
 
@@ -182,7 +180,7 @@ Inches = st.number_input("Screen Size (Inches)", min_value=10.0, max_value=20.0,
 Weight = st.number_input("Weight (kg)", min_value=0.0, max_value=12.0, step=0.1, value=2.0)
 
 # Convert inputs into a dictionary
-input_dict = {
+user_input = {
     'Company': Company,
     'Typename': Typename,
     'Cpu': Cpu,
@@ -194,18 +192,12 @@ input_dict = {
     'Inches':Inches,
     'Weight': Weight
 }
-input_df = pd.DataFrame(input_dict)
 
-# Encode categorical features
-for col in input_df.columns:
-    if col in label_encoders:
-        input_df[col] = label_encoders[col].transform(input_df[col])
-
-# Predict and display result
+# Predict when button is pressed
 if st.button("Predict Price"):
-    prediction = model.predict(input_df)
-    st.success(f"Predicted Laptop Price: ₹ {prediction[0]:,.2f}")
-
+    input_df = pd.DataFrame([user_input])  # Convert dict to DataFrame
+    prediction = model_pipeline.predict(input_df)
+    st.success(f"Estimated Laptop Price: ₹{int(prediction[0]):,}")
 
 import streamlit as st
 import pandas as pd
@@ -394,26 +386,39 @@ with col2:
     Inches = st.number_input("Screen Size (Inches)", min_value=10.0, max_value=20.0, step=0.1, value=15.6)
     Weight = st.number_input("Weight (kg)", min_value=0.0, max_value=12.0, step=0.1, value=2.0)
 
-# Add prediction button
-if st.button("Predict Price 💰"):
-    try:
-        # Create input DataFrame
-        input_data = pd.DataFrame([{
-            'Company': Company,
-            'TypeName': Typename,
-            'Inches': 15.6,  # you can optionally add an input for Inches
-            'ScreenResolution': ScreenResolution,
-            'Cpu': Cpu,
-            'Ram': Ram,
-            'Memory': Memory,
-            'Gpu': Gpu,
-            'OpSys': OpSys,
-            'Weight': 2.2  # you can optionally add an input for Weight
-        }])
+# Input Dictionary
+user_input = {
+    'Company': Company,
+    'Typename': Typename,
+    'Cpu': Cpu,
+    'Gpu': Gpu,
+    'OpSys': OpSys,
+    'ScreenResolution': ScreenResolution,
+    'Memory': Memory,
+    'Ram': Ram,
+    'Inches ':Inches,
+    'Weight': Weight
+}
 
-        # Predict price
-        predicted_price = model_pipeline.predict(input_data)[0]
-        st.success(f"Estimated Price: ₹{int(predicted_price):,}")
-    except Exception as e:
-        st.error(f"Prediction failed: {e}")
+# Predict Button
+if st.button("Predict Price"):
+    input_df = pd.DataFrame([user_input])
+    prediction = model_pipeline.predict(input_df)
+    st.markdown(f"### 💰 Estimated Price: ₹{int(prediction[0]):,}")
 
+st.markdown("""
+<style>
+    .stButton > button {
+        background-color: #4CAF50;
+        color: white;
+        font-size: 16px;
+        border-radius: 10px;
+        height: 3em;
+        width: 100%;
+    }
+
+    .stSelectbox > div {
+        font-size: 14px;
+    }
+</style>
+""", unsafe_allow_html=True)
