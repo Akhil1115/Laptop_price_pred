@@ -4,12 +4,7 @@ import pandas as pd
 import pickle
 
 with open('model_pipeline.pkl', 'rb') as f:
-    saved = pickle.load(f)
-    model_pipeline = saved['model']
-    label_encoders = saved['encoders']  # Only needed if you manually apply encoders
-
-
-
+    model_pipeline = pickle.load(f)
 
 # Streamlit UI: Get user inputs
 st.title("Laptop Price Predictor")
